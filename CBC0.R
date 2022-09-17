@@ -4,7 +4,7 @@ Cx <- read_excel("cervical cancer_new.xlsx", sheet = "CCRT")
 Cx <- Cx %>% mutate(stage_m=ifelse(stage=="1B"|stage=="2A"|stage=="2B", "IB-IIB", 
                                    ifelse(stage=="3C1"|stage=="3A"|stage=="3B", "IIIA-IIIC1", "IIIC2-IVB")))
 
-# selection 
+## selection 
 Cx <- Cx %>% filter(css==1 | fu_date>12) %>% filter(CTx=="Cisplatin") 
 Cx %>% filter(stage=="4B") #5
 
@@ -340,7 +340,7 @@ b3 <- ggforest(finalmodel, data=Cx_s, main="Disease specific survival (aggressiv
 ##non-aggressive group
 Cx_sa <- Cx_s %>% mutate(alpha=ifelse(a>=0.08,"\u22650.08","<0.08"), TS = Surv(fu_date,Group2==1))
 out=mycph(TS~ Age+Pathology+NLR+`FIGO stage`+`pre ALC`+`min ALC`+ alpha+ `pre ALC(a2)`+ `ALC nadir(e1)`, data=Cx_sa)
-HRplot(out, type=2, show.CI=TRUE, main="Hazard ratios of all individual variables DSS (non-aggressive)")
+HRplot(out, type=2, show.CI=TRUE, main="Hazard ratios of all individual variables for DSS (non-aggressive)")
 result<-coxph(Surv(fu_date,Group2)
               ~`ALC nadir(e1)`+alpha,  data=Cx_sa)    
 finalmodel<-step(result, direction = 'backward')
