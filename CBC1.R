@@ -242,7 +242,7 @@ summary(lm(a~t1, data=test))
 summary(lm(a~STX6, data=test))
 summary(lm(a~E2F8, data=test))
 
-test %>% filter(risk=="high") %>% select(Name, Age, E2F8, STX6, CCDC113, ACOT9, t1, t2, t,a, NLR,css, recur1, fu_date) %>% arrange(desc(t)) 
-test %>% filter(risk=="high") %>% select(Name, Age, E2F8, STX6, CCDC113, ACOT9, t1, t2, t,a, NLR,css, recur1, fu_date) %>% arrange(desc(t1)) 
-test %>% filter(risk=="high") %>% select(Name, Age, E2F8, STX6, CCDC113, ACOT9, t1, t2, t,a, NLR,css, recur1, fu_date) %>% arrange(desc(t2))
+test %>% filter(risk=="high") %>% select(Age, E2F8, STX6, CCDC113, ACOT9, t1, t2, t,a, NLR,css, recur1, fu_date) %>% arrange(desc(t)) 
+test %>% filter(risk=="high") %>% select(Age, E2F8, STX6, CCDC113, ACOT9, t1, t2, t,a, NLR,css, recur1, fu_date) %>% arrange(desc(t1)) 
+test %>% filter(risk=="high") %>% select(Age, E2F8, STX6, CCDC113, ACOT9, t1, t2, t,a, NLR,css, recur1, fu_date) %>% arrange(desc(t2))
 
