@@ -195,7 +195,7 @@ ggarrange(b1,b2,b3,b5,b4,b6, labels=c("A","B","C","D","E","F"), font.label = lis
 
 
 # mean 30
-a <- Cx %>% arrange(recur_date) %>% filter(css==1) %>% select(No, Name, recur_date, recur1, fu_date, css) %>% 
+a <- Cx %>% arrange(recur_date) %>% filter(css==1) %>% select(No, recur_date, recur1, fu_date, css) %>% 
   mutate(progression=ifelse(recur1==1, "LP", ifelse(recur1==2, "DM", "LP+DM")), progression=factor(progression, levels = c("LP", "DM", "LP+DM"))) %>% 
   ggplot(aes(x=recur_date, y=fu_date, color=progression)) + geom_point(size=3)+ scale_color_manual(values=c("gray", "blue","red"))+theme_bw()+
   ylab("Time taken for disease specific deaths (Months)")+ xlab("Time taken for cancer progressions (Months)")+
