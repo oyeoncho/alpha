@@ -1,9 +1,9 @@
 library(readxl)
 library(tidyverse)
+
 Cx <- read_excel("cervical cancer_new.xlsx", sheet = "CCRT") 
 Cx <- Cx %>% mutate(stage_m=ifelse(stage=="1B"|stage=="2A"|stage=="2B", "IB-IIB", 
                                    ifelse(stage=="3C1"|stage=="3A"|stage=="3B", "IIIA-IIIC1", "IIIC2-IVB")))
-
 ## selection 
 Cx <- Cx %>% filter(css==1 | fu_date>12) %>% filter(CTx=="Cisplatin") 
 Cx %>% filter(stage=="4B") #5
@@ -306,73 +306,78 @@ Cx_s <- Cx1 %>% mutate(NLR=ifelse(nlr_m==1,"\u22652.43","< 2.43"), `FIGO stage`=
                        `pre ALC`=ifelse(ALC0_m==1, "<1884", "\u22651884"), `pre ALC`=factor(`pre ALC`, levels = c("\u22651884", "<1884")),
                        `min ALC`=ifelse(min_alc_m==1, "<276", "\u2265276"), `min ALC`=factor(`min ALC`, levels = c("\u2265276", "<276")),
                        Age=ifelse(age_m==1,"<50","\u226550"), Age=factor(Age,levels = c("\u226550","<50")))
+
+
+
 Cx_s <- Cx_s %>% mutate(TS = Surv(fu_date, css==1)) 
 out=mycph(TS~ Age+Pathology+NLR+`FIGO stage`+`pre ALC`+`min ALC`+ alpha+ `pre ALC(a2)`+ `ALC nadir(e1)`, data=Cx_s)
 HRplot(out, type=2, show.CI=TRUE, main="Hazard ratios of all individual variables for DSS")
 result<-coxph(Surv(fu_date,css)
-              ~NLR+`FIGO stage`+Pathology+`pre ALC(a2)`,data=Cx_s)    
+              ~Age+Pathology+NLR+`FIGO stage`+`pre ALC`+`min ALC`+ alpha+ `pre ALC(a2)`+ `ALC nadir(e1)`,data=Cx_s)    
 finalmodel<-step(result, direction = 'backward')
 summary(finalmodel)
-b1 <- ggforest(finalmodel, data=Cx_s, main="Disease sepcific survival", fontsize = 1.5)
+ggforest(finalmodel, data=Cx_s, fontsize = 1.5)
 
 # PFS
 Cx_s <- Cx_s %>% mutate(TS = Surv(recur_date,recur_m==1)) 
 out=mycph(TS~ Age+Pathology+NLR+`FIGO stage`+`pre ALC`+`min ALC`+ alpha+ `pre ALC(a2)`+ `ALC nadir(e1)`, data=Cx_s)
 HRplot(out, type=2, show.CI=TRUE, main="Hazard ratios of all individual variables for PFS")
 result<-coxph(Surv(recur_date,recur_m)
-              ~Age+NLR+`FIGO stage`+Pathology+`pre ALC(a2)`+`min ALC`+`pre ALC`,
+              ~Age+Pathology+NLR+`FIGO stage`+`pre ALC`+`min ALC`+ alpha+ `pre ALC(a2)`+ `ALC nadir(e1)`,
               data=Cx_s)    
 finalmodel<-step(result, direction = 'backward')
 summary(finalmodel)
-b2 <- ggforest(finalmodel, data=Cx_s, main="Progression free survival", fontsize = 1.5)
+ggforest(finalmodel, data=Cx_s, fontsize = 1.5)
 
 ####### aggressive group
 Cx_s <- Cx_s %>% mutate(TS = Surv(fu_date,Group1==1))
 out=mycph(TS~ Age+Pathology+NLR+`FIGO stage`+`pre ALC`+`min ALC`+ alpha+ `pre ALC(a2)`+ `ALC nadir(e1)`, data=Cx_s)
 HRplot(out, type=2, show.CI=TRUE, main="Hazard ratios of all individual variables for DSS (aggressive)")
+#result<-coxph(Surv(fu_date,Group1)
+#              ~Age+Pathology+NLR+`FIGO stage`+`min ALC`+`pre ALC`+ alpha+ `pre ALC(a2)`+ `ALC nadir(e1)`,
+#              data=Cx_s)    
+# min ALC - different form expected or UV analysis in MV - noisy factor  
 result<-coxph(Surv(fu_date,Group1)
-              ~NLR+Pathology+`ALC nadir(e1)`+`FIGO stage`+alpha,
+              ~Age+Pathology+NLR+`FIGO stage`+`pre ALC`+ alpha+ `pre ALC(a2)`+ `ALC nadir(e1)`,
               data=Cx_s)    
 finalmodel<-step(result, direction = 'backward')
 summary(finalmodel)
-b3 <- ggforest(finalmodel, data=Cx_s, main="Disease specific survival (aggressive)", fontsize = 1.5)
+ggforest(finalmodel, data=Cx_s, fontsize = 1.5)
 
 ##non-aggressive group
 Cx_sa <- Cx_s %>% mutate(alpha=ifelse(a>=0.08,"\u22650.08","<0.08"), TS = Surv(fu_date,Group2==1))
 out=mycph(TS~ Age+Pathology+NLR+`FIGO stage`+`pre ALC`+`min ALC`+ alpha+ `pre ALC(a2)`+ `ALC nadir(e1)`, data=Cx_sa)
 HRplot(out, type=2, show.CI=TRUE, main="Hazard ratios of all individual variables for DSS (non-aggressive)")
 result<-coxph(Surv(fu_date,Group2)
-              ~`ALC nadir(e1)`+alpha,  data=Cx_sa)    
+              ~Age+Pathology+NLR+`FIGO stage`+`pre ALC`+`min ALC`+ alpha+ `pre ALC(a2)`+ `ALC nadir(e1)`,  data=Cx_sa)    
 finalmodel<-step(result, direction = 'backward')
 summary(finalmodel)
-b4 <- ggforest(finalmodel, data=Cx_sa, main="Disease specific survival (non-aggressive)", fontsize = 1.5) + coord_fixed(ratio=0.4)
+ggforest(finalmodel, data=Cx_sa,  fontsize = 1.5)
 
 ###
 ## stage 3C2-4B
 Cx_s1 <-  Cx_s %>% filter(`FIGO stage`=="IIIC2-IVB")
 Cx_s1 <- Cx_s1 %>% mutate(TS = Surv(fu_date,Group1==1))
 out=mycph(TS~ Age+Pathology+NLR+`pre ALC`+`min ALC`+ alpha+ `pre ALC(a2)`+ `ALC nadir(e1)`, data=Cx_s1)
-HRplot(out, type=2, show.CI=TRUE, main="Hazard ratios of all individual variables for DSS(aggressive) in stage IIIC2-IVB")
+HRplot(out, type=2, show.CI=TRUE, main="Hazard ratios of all individual variables for DSS (aggressive) in stage IIIC2-IVB")
 result<-coxph(Surv(fu_date,Group1)
-              ~NLR+Pathology+`ALC nadir(e1)`+alpha,
+              ~Age+Pathology+NLR+`pre ALC`+ alpha+ `pre ALC(a2)`+ `ALC nadir(e1)`,
               data=Cx_s1)    
 finalmodel<-step(result, direction = 'backward')
 summary(finalmodel)
-b5 <- ggforest(finalmodel, data=Cx_s1, main="Disease specific survival (aggressive) in stage IIIC2-IVB", fontsize = 1.5)+ coord_fixed(ratio=0.4)
+ggforest(finalmodel, data=Cx_s1, fontsize = 1.5)
 
 ## stage 3A-3C1
 Cx_s1 <-  Cx_s %>% filter(stage_m=="IIIA-IIIC1")
 Cx_s1 <- Cx_s1 %>% mutate(TS = Surv(fu_date,Group1==1))
 out=mycph(TS~ Age+Pathology+NLR+`pre ALC`+`min ALC`+ alpha+ `pre ALC(a2)`+ `ALC nadir(e1)`, data=Cx_s1)
-HRplot(out, type=2, show.CI=TRUE, main="Hazard ratios of all individual variables for DSS(aggressive) in stage IIIA-IIIC1")
+HRplot(out, type=2, show.CI=TRUE, main="Hazard ratios of all individual variables for DSS (aggressive) in stage IIIA-IIIC1")
 result<-coxph(Surv(fu_date,Group1)
-              ~NLR+Pathology+`ALC nadir(e1)`+alpha,
+              ~Age+Pathology+NLR+`pre ALC`+ alpha+ `pre ALC(a2)`+ `ALC nadir(e1)`,
               data=Cx_s1)    
 finalmodel<-step(result, direction = 'backward')
 summary(finalmodel)
-b6 <- ggforest(finalmodel, data=Cx_s1, main="Disease specific survival (aggressive) in stageIIIA-IIIC1", fontsize = 1.5) + coord_fixed(ratio=0.6)
-
-ggarrange(b1,b2,b3,b4,b5,b6, labels=c("A","B","C","D","E","F"), font.label = list(size = 30, color = "black"), nrow=3, ncol=2)
+ggforest(finalmodel, data=Cx_s1, fontsize = 1.5)
 
 ## KM
 fit=survfit(Surv(fu_date, Group1==1)~alpha, data=Cx1)
